@@ -138,15 +138,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           isSelected[index] = !isSelected[index];
                           if (isSelected[0] && flag != 1) {
-                            Navigator.pushNamed(context, '/');
+                            Navigator.popAndPushNamed(context, '/');
                             isSelected[1] = false;
                             isSelected[2] = false;
                           } else if (isSelected[1]) {
-                            Navigator.pushNamed(context, '/first');
+                            Navigator.popAndPushNamed(context, '/first');
                             isSelected[0] = false;
                             isSelected[2] = false;
                           } else if (isSelected[2]) {
-                            Navigator.pushNamed(context, '/second');
+                            Navigator.popAndPushNamed(context, '/second');
                             isSelected[0] = false;
                             isSelected[1] = false;
                           }
@@ -259,15 +259,15 @@ class _MyHomePageState2 extends State<MyHomePage2> {
                         setState(() {
                           isSelected[index] = !isSelected[index];
                           if (isSelected[0]) {
-                            Navigator.pushNamed(context, '/');
+                            Navigator.popAndPushNamed(context, '/');
                             isSelected[1] = false;
                             isSelected[2] = false;
                           } else if (isSelected[1] && flag != 2) {
-                            Navigator.pushNamed(context, '/first');
+                            Navigator.popAndPushNamed(context, '/first');
                             isSelected[0] = false;
                             isSelected[2] = false;
                           } else if (isSelected[2]) {
-                            Navigator.pushNamed(context, '/second');
+                            Navigator.popAndPushNamed(context, '/second');
                             isSelected[0] = false;
                             isSelected[1] = false;
                           }
@@ -379,15 +379,15 @@ class _MyHomePageState3 extends State<MyHomePage3> {
                         setState(() {
                           isSelected[index] = !isSelected[index];
                           if (isSelected[0]) {
-                            Navigator.pushNamed(context, '/');
+                            Navigator.popAndPushNamed(context, '/');
                             isSelected[1] = false;
                             isSelected[2] = false;
                           } else if (isSelected[1]) {
-                            Navigator.pushNamed(context, '/first');
+                            Navigator.popAndPushNamed(context, '/first');
                             isSelected[0] = false;
                             isSelected[2] = false;
                           } else if (isSelected[2] && flag != 3) {
-                            Navigator.pushNamed(context, '/second');
+                            Navigator.popAndPushNamed(context, '/second');
                             isSelected[0] = false;
                             isSelected[1] = false;
                           }
