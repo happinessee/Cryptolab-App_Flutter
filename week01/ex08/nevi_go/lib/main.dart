@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// TODO : 버튼 클래스화 시켜서 코드 간편하게 만들기, 방안 생각하기.
 class MyHomePage3 extends StatefulWidget {
   const MyHomePage3({Key? key, title = 'screen3'}) : super(key: key);
 
