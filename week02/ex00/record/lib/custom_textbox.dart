@@ -6,7 +6,7 @@ Container customTextBox({
 }) {
   return Container(
     decoration: BoxDecoration(
-      color: Colors.black12,
+      color: Colors.white,
       borderRadius: BorderRadius.circular(5),
     ),
     margin: const EdgeInsets.all(15),
@@ -15,9 +15,6 @@ Container customTextBox({
       child: RichText(
         text: TextSpan(
           children: [
-            const WidgetSpan(
-              child: Icon(Icons.check_circle),
-            ),
             TextSpan(
               text: title,
               style: const TextStyle(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:record/customToggleBtn.dart';
-import 'package:record/customTextBox.dart';
+import 'package:record/custom_togglebtn.dart';
+import 'package:record/custom_textbox.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'record',
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -45,32 +46,72 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        title: const Text(
+          '코동이',
+          style: TextStyle(color: Colors.black, fontFamily: 'summer'),
+        ),
+        backgroundColor: Colors.white,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.error,
+              color: Colors.black,
+            ),
+            onPressed: () => {},
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Container(
-                  child: Text(
-                    '1',
-                    style: TextStyle(fontSize: 50),
-                  ),
-                ),
-              ]),
               Container(
-                child: SizedBox(
-                  height: 180,
+                margin: const EdgeInsets.all(15),
+                padding: const EdgeInsets.all(5),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: '제목',
+                  ),
                 ),
               ),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Container(
-                  child: Text(
-                    '하나',
-                    style: TextStyle(fontSize: 120),
+              Container(
+                margin: const EdgeInsets.all(15),
+                padding: const EdgeInsets.all(5),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: '내용',
                   ),
+                  maxLines: 7,
                 ),
-              ])
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.all(15),
+                      child: ElevatedButton(
+                        child: const Text('완료'),
+                        onPressed: null,
+                        style: ButtonStyle(
+                            foregroundColor:
+                                MaterialStateProperty.all(Colors.white),
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.purple),
+                            shape: MaterialStateProperty.all<
+                                RoundedRectangleBorder>(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ))),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           Row(
@@ -120,29 +161,7 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Container(
-                  child: Text(
-                    '2',
-                    style: TextStyle(fontSize: 50),
-                  ),
-                ),
-              ]),
-              Container(
-                child: SizedBox(
-                  height: 180,
-                ),
-              ),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Container(
-                  child: Text(
-                    '둘',
-                    style: TextStyle(fontSize: 120),
-                  ),
-                ),
-              ])
-            ],
+            children: [],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
