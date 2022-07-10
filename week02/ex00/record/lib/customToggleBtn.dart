@@ -1,50 +1,49 @@
 import 'package:flutter/material.dart';
 
-class CustomToggleBtnWidget extends StatefulWidget {
-  final List<bool> isSelected;
-  final Color? disabledColor;
-  final bool? renderBorder;
-  final double? borderWidth;
-  final Color? borderColor;
-  final Color? selectedBorderColor;
-  final Color? fillColor;
-  final Color? color;
-  final Color? selectedColor;
-  final BorderRadius? borderRadius;
-  final List<Widget> children;
-  final Function(int) onPressed;
-
-  const CustomToggleBtnWidget({
-    required this.children,
-    required this.isSelected,
-    required this.onPressed,
-    this.disabledColor = Colors.white,
-    this.renderBorder = false,
-    this.borderWidth = 0,
-    this.borderColor = Colors.white,
-    this.color = Colors.grey,
-    this.selectedColor = Colors.black,
-    this.fillColor = Colors.white,
-    this.selectedBorderColor = Colors.white,
-    this.borderRadius,
-  });
-
-  @override
-  CustomToggleBtnWidgetState createState() => CustomToggleBtnWidgetState();
-}
-
-class CustomToggleBtnWidgetState extends State<CustomToggleBtnWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return (Container(
-        margin: EdgeInsets.all(30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(5),
+Container customToggleBtnWidget({
+  required List<bool> isSelected,
+  required Function(int) onClick,
+}) {
+  return Container(
+    margin: const EdgeInsets.all(30),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: ToggleButtons(
+      isSelected: isSelected,
+      onPressed: (int index) {
+        return onClick(index);
+      },
+      color: Colors.grey,
+      disabledColor: Colors.white,
+      renderBorder: false,
+      borderWidth: 0,
+      borderColor: Colors.white,
+      selectedColor: Colors.black,
+      borderRadius: BorderRadius.circular(10),
+      fillColor: Colors.white,
+      selectedBorderColor: Colors.white,
+      children: const [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 35),
+          child: Text(
+            '기록',
+            style: TextStyle(
+              fontSize: 24,
+            ),
+          ),
         ),
-        child: ToggleButtons(
-          children: [],
-          isSelected: [],
-        )));
-  }
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 35),
+          child: Text(
+            '조회',
+            style: TextStyle(
+              fontSize: 24,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
