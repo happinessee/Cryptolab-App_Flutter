@@ -1,6 +1,15 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
+
 import 'package:record/custom_togglebtn.dart';
 import 'package:record/custom_textbox.dart';
+
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+Future<String> get _localPath async {
+  final directory = await getApplicationDocumentsDirectory();
+  return directory.path;
+}
 
 void main() {
   runApp(const MyApp());
@@ -34,7 +43,6 @@ class MyHomePage2 extends StatefulWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, title = 'screen1'}) : super(key: key);
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
