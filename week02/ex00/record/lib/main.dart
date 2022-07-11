@@ -28,14 +28,14 @@ class StorageFile {
       final contents = await file.readAsString();
       return contents;
     } catch (e) {
-      return 'error';
+      return '글이 없습니다.';
     }
   }
 
   Future<File> writeStorage(Future<File> fileName, String content) async {
     final file = await fileName;
 // 파일 쓰기
-    return file.writeAsString(content);
+    return file.writeAsString(content + '\n', mode: FileMode.append);
   }
 }
 
@@ -89,21 +89,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late TextEditingController controllerTitle = TextEditingController();
   late TextEditingController controllerContent = TextEditingController();
-
+  String titleData = '';
+  String contentData = '';
   Future<File> _saveTitle() {
     Future<File> title = widget.storage._localTitle;
-    return widget.storage.writeStorage(title, controllerTitle.text);
+    return widget.storage.writeStorage(title, titleData);
   }
 
   Future<File> _saveContent() {
     Future<File> content = widget.storage._localContent;
-    return widget.storage.writeStorage(content, controllerContent.text);
+    return widget.storage.writeStorage(content, contentData);
   }
-
-  String data = 'x';
 
   void btnPressed() {
     setState(() {
+      titleData += controllerTitle.text;
+      contentData += controllerContent.text;
       _saveTitle();
       _saveContent();
     });
@@ -224,12 +225,13 @@ class _MyHomePageState2 extends State<MyHomePage2> {
   int flag = 2;
   int index = 0;
   int count = 0;
-  late Future<String> future;
-
+  late Future<String> title;
+  late Future<String> content;
   @override
   void initState() {
     super.initState();
-    future = readTitle();
+    title = readTitle();
+    content = readContent();
   }
 
   Future<String> readTitle() {
@@ -237,9 +239,9 @@ class _MyHomePageState2 extends State<MyHomePage2> {
     return (widget.storage.readStorage(title));
   }
 
-  Future<String> readTitleToString() async {
-    final title = await readTitle();
-    return title;
+  Future<String> readContent() {
+    Future<File> content = widget.storage._localContent;
+    return (widget.storage.readStorage(content));
   }
 
   @override
@@ -265,26 +267,28 @@ class _MyHomePageState2 extends State<MyHomePage2> {
       ),
       body: Stack(
         children: [
-          Column(
+          Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              FutureBuilder(
-                  future: future,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.hasData) {
-                      return customTextBox(
-                        title: '${snapshot.data.toString()}\n',
-                        content: 'no...',
-                      );
-                    } else if (snapshot.hasData == false) {
-                      return const Text('dont have data');
-                    } else if (snapshot.hasError) {
-                      return const Text('error');
-                    } else {
-                      return const Text('뭐지...');
-                    }
-                  })
+              Expanded(
+                child: FutureBuilder(
+                    future: Future.wait([title, content]),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<String>> snapshot) {
+                      if (snapshot.hasData) {
+                        return customTextBox(
+                          title: '${snapshot.data![0].toString()}\n',
+                          content: '${snapshot.data![1].toString()}',
+                        );
+                      } else if (snapshot.hasData == false) {
+                        return const Text('dont have data');
+                      } else if (snapshot.hasError) {
+                        return const Text('Error');
+                      } else {
+                        return const Text('else...');
+                      }
+                    }),
+              ),
             ],
           ),
           Row(

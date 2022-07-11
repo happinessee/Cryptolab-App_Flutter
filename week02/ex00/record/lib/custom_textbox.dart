@@ -18,14 +18,14 @@ Container customTextBox({
             TextSpan(
               text: title,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 30,
                 color: Colors.black,
               ),
             ),
             TextSpan(
               text: content,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: Colors.black,
               ),
             ),
