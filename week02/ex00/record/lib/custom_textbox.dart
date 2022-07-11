@@ -22,11 +22,6 @@ Container customTextBox({
                 color: Colors.black,
               ),
             ),
-            const WidgetSpan(
-              child: SizedBox(
-                width: 25,
-              ),
-            ),
             TextSpan(
               text: content,
               style: const TextStyle(
