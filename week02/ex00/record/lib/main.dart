@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
 
 import 'package:record/custom_togglebtn.dart';
 import 'package:record/custom_textbox.dart';
@@ -35,7 +37,7 @@ class StorageFile {
   Future<File> writeStorage(Future<File> fileName, String content) async {
     final file = await fileName;
 // 파일 쓰기
-    return file.writeAsString(content + '\n', mode: FileMode.append);
+    return file.writeAsString('$content\n', mode: FileMode.append);
   }
 }
 
@@ -167,7 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Container(
                       margin: const EdgeInsets.all(15),
                       child: ElevatedButton(
-                        child: const Text('완료'),
                         onPressed: btnPressed,
                         style: ButtonStyle(
                             foregroundColor:
@@ -178,6 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 RoundedRectangleBorder>(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ))),
+                        child: const Text('완료'),
                       ),
                     ),
                   ),
@@ -278,7 +280,7 @@ class _MyHomePageState2 extends State<MyHomePage2> {
                       if (snapshot.hasData) {
                         return customTextBox(
                           title: '${snapshot.data![0].toString()}\n',
-                          content: '${snapshot.data![1].toString()}',
+                          content: snapshot.data![1].toString(),
                         );
                       } else if (snapshot.hasData == false) {
                         return const Text('dont have data');
