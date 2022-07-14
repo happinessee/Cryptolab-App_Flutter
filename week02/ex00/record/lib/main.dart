@@ -271,6 +271,7 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
+            // todo : Futurebuilder를 없애고, 해당 데이터를 한 줄씩 읽어서 배열로 만들어서 화면을 누를 때마다 위젯을 하나씩 만들어준다. (ListView, 배열활용)
             children: [
               Expanded(
                 child: FutureBuilder(
