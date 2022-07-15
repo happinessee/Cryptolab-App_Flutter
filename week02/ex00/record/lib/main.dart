@@ -36,7 +36,6 @@ class StorageFile {
 
   Future<File> writeStorage(Future<File> fileName, String content) async {
     final file = await fileName;
-// 파일 쓰기
     return file.writeAsString('$content\n', mode: FileMode.append);
   }
 }
@@ -227,23 +226,45 @@ class _MyHomePageState2 extends State<MyHomePage2> {
   int flag = 2;
   int index = 0;
   int count = 0;
-  late Future<String> title;
-  late Future<String> content;
+  late Future<List<String>> title;
+  late Future<List<String>> content;
+  late List<Widget> lst;
+
   @override
   void initState() {
     super.initState();
     title = readTitle();
     content = readContent();
+    int i = 0;
+    while (i < title.length) {
+      lst[i] = customTextBox(
+        title: title[i],
+        content: content[i],
+      );
+      i++;
+    }
   }
 
-  Future<String> readTitle() {
-    Future<File> title = widget.storage._localTitle;
-    return (widget.storage.readStorage(title));
+  Future<List<String>> readTitle() async {
+    List<String> tmp = [];
+    File title = await widget.storage._localTitle;
+    title
+        .openRead()
+        .map(utf8.decode)
+        .transform(const LineSplitter())
+        .forEach((l) => tmp.add(l));
+    return (tmp);
   }
 
-  Future<String> readContent() {
-    Future<File> content = widget.storage._localContent;
-    return (widget.storage.readStorage(content));
+  Future<List<String>> readContent() async {
+    List<String> tmp = [];
+    File content = await widget.storage._localContent;
+    content
+        .openRead()
+        .map(utf8.decode)
+        .transform(const LineSplitter())
+        .forEach((l) => tmp.add(l));
+    return (tmp);
   }
 
   @override
@@ -271,27 +292,10 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            // todo : Futurebuilder를 없애고, 해당 데이터를 한 줄씩 읽어서 배열로 만들어서 화면을 누를 때마다 위젯을 하나씩 만들어준다. (ListView, 배열활용)
             children: [
-              Expanded(
-                child: FutureBuilder(
-                    future: Future.wait([title, content]),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<List<String>> snapshot) {
-                      if (snapshot.hasData) {
-                        return customTextBox(
-                          title: '${snapshot.data![0].toString()}\n',
-                          content: snapshot.data![1].toString(),
-                        );
-                      } else if (snapshot.hasData == false) {
-                        return const Text('dont have data');
-                      } else if (snapshot.hasError) {
-                        return const Text('Error');
-                      } else {
-                        return const Text('else...');
-                      }
-                    }),
-              ),
+              ListView(
+                children: lst,
+              )
             ],
           ),
           Row(
