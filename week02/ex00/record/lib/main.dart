@@ -235,14 +235,6 @@ class _MyHomePageState2 extends State<MyHomePage2> {
     super.initState();
     title = readTitle();
     content = readContent();
-    int i = 0;
-    while (i < title.length) {
-      lst[i] = customTextBox(
-        title: title[i],
-        content: content[i],
-      );
-      i++;
-    }
   }
 
   Future<List<String>> readTitle() async {
@@ -253,6 +245,7 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         .map(utf8.decode)
         .transform(const LineSplitter())
         .forEach((l) => tmp.add(l));
+    print('title ok');
     return (tmp);
   }
 
@@ -264,6 +257,7 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         .map(utf8.decode)
         .transform(const LineSplitter())
         .forEach((l) => tmp.add(l));
+    print('content ok');
     return (tmp);
   }
 
@@ -290,11 +284,35 @@ class _MyHomePageState2 extends State<MyHomePage2> {
       ),
       body: Stack(
         children: [
-          Row(
+          Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              ListView(
-                children: lst,
+              FutureBuilder(
+                future: Future.wait([title, content]),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<List<String>>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.none) {
+                    return customTextBox(
+                      title: 'FutureBuilder Error\n',
+                      content: ' ',
+                    );
+                  } else if (snapshot.hasData == false) {
+                    return (customTextBox(
+                        content: '내용이 없습니다.', title: '내용이 없습니다.\n'));
+                  } else {
+                    int i = 0;
+                    while (i < snapshot.data![0].length + 1) {
+                      lst[i] = customTextBox(
+                        title: snapshot.data![0][i],
+                        content: snapshot.data![1][i],
+                      );
+                      i++;
+                    }
+                    return Column(
+                      children: lst,
+                    );
+                  }
+                },
               )
             ],
           ),
