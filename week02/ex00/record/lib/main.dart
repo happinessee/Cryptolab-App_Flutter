@@ -40,7 +40,7 @@ class StorageFile {
   }
 }
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -245,7 +245,6 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         .map(utf8.decode)
         .transform(const LineSplitter())
         .forEach((l) => tmp.add(l));
-    print('title ok');
     return (tmp);
   }
 
@@ -257,7 +256,6 @@ class _MyHomePageState2 extends State<MyHomePage2> {
         .map(utf8.decode)
         .transform(const LineSplitter())
         .forEach((l) => tmp.add(l));
-    print('content ok');
     return (tmp);
   }
 
