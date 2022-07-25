@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'dart:ffi';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
   runApp(const MyApp());
 }
 
@@ -30,6 +33,8 @@ class Map extends StatefulWidget {
 class MapState extends State<Map> {
   var currentPosition;
   var currentLocationAddress;
+  var apiKey = FlutterConfig.get('apiKey');
+
   @override
   initState() {
     super.initState();
