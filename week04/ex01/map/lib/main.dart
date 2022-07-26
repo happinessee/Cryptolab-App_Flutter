@@ -37,6 +37,7 @@ class MapState extends State<Map> {
   var currentPosition;
   //var currentLocationAddress;
   Completer<GoogleMapController> myController = Completer();
+  Set<Marker> _markers = {};
 
   static CameraPosition kAnyang = const CameraPosition(
       bearing: 192.8334901395799,
@@ -59,6 +60,7 @@ class MapState extends State<Map> {
         onMapCreated: (GoogleMapController controller) {
           myController.complete(controller);
         },
+        markers: _markers,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -96,6 +98,10 @@ class MapState extends State<Map> {
         ),
       ),
     );
+    _markers.add(Marker(
+      markerId: const MarkerId('test'),
+      position: LatLng(currentPosition.latitude, currentPosition.longitude),
+    ));
   }
 
   //getCurrentLocationAddress() async {
