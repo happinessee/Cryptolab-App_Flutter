@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 
 import 'dart:ffi';
 import 'dart:async';
+
+import 'package:map/db/db_helper.dart';
+import 'package:map/db/locate_model.dart';
+import 'package:map/auth/secret.dart';
 
 void main() async {
   // apiKey의 호출을 위함.
@@ -35,16 +41,22 @@ class Map extends StatefulWidget {
 
 class MapState extends State<Map> {
   var currentPosition;
-  //var currentLocationAddress;
+  int idx = 0; // db에 저장할 id, 1씩 늘려주면서 사용할 것이다.
+  int markeridx = 1;
   Completer<GoogleMapController> myController = Completer();
   Set<Marker> _markers = {};
+  Set<Polyline> _polylines = Set<Polyline>();
+  List<LatLng> polylineCoordinates = [];
+  late PolylinePoints polylinePoints;
 
+  // 초기 카메라 위치
   static CameraPosition kAnyang = const CameraPosition(
       bearing: 192.8334901395799,
       target: LatLng(37.4108359, 126.9123497),
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
 
+  // currentPosition의 초기 값을 지정해주기 위함.
   @override
   initState() {
     super.initState();
@@ -61,6 +73,7 @@ class MapState extends State<Map> {
           myController.complete(controller);
         },
         markers: _markers,
+        //polylines: _polylines,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -80,7 +93,6 @@ class MapState extends State<Map> {
         .then((Position position) {
       setState(() {
         currentPosition = position;
-        //getCurrentLocationAddress();
       });
     }).catchError((e) {
       print(e);
@@ -99,83 +111,57 @@ class MapState extends State<Map> {
       ),
     );
     _markers.add(Marker(
-      markerId: const MarkerId('test'),
+      markerId: MarkerId(markeridx.toString()),
       position: LatLng(currentPosition.latitude, currentPosition.longitude),
     ));
+    save(currentPosition);
+    markeridx++;
   }
 
-  //getCurrentLocationAddress() async {
-  //  try {
-  //    List<Placemark> listPlaceMarks = await placemarkFromCoordinates(
-  //        currentPosition.latitude, currentPosition.longitude);
-  //    Placemark place = listPlaceMarks[0];
+  Future<void> save(dynamic currentPosition) async {
+    DBHelper hp = DBHelper();
+    var time = DateTime.now();
+    var locate = Location(
+      id: idx++,
+      year: time.year,
+      month: time.month,
+      day: time.day,
+      hour: time.hour,
+      minute: time.minute,
+      latitude: currentPosition.latitude,
+      longitude: currentPosition.longitude,
+    );
+    await hp.insertLocate(locate);
+  }
 
-  //    setState(() {
-  //      currentLocationAddress =
-  //          '${place.locality}, ${place.postalCode}, ${place.country}';
-  //    });
-  //  } catch (e) {
-  //    print(e);
-  //  }
-  //}
+  setPolylines() async {
+    var locationList = await DBHelper().getAllLocation();
+    if (locationList.length < 1) return ;
+    List<PointLatLng> result = await polylinePoints?.getRouteBetweenCoordinates(
+        '$androidgoogleMapApiKey',
+        (SOURCE_LOCATION.latitude,
+        SOURCE_LOCATION.longitude),
+        (DEST_LOCATION.latitude,
+        DEST_LOCATION.longitude));
+    if (result.isNotEmpty) {
+      // loop through all PointLatLng points and convert them
+      // to a list of LatLng, required by the Polyline
+      result.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    }
+    setState(() {
+      // create a Polyline instance
+      // with an id, an RGB color and the list of LatLng pairs
+      Polyline polyline = Polyline(
+          polylineId: PolylineId('poly'),
+          color: Color.fromARGB(255, 40, 122, 198),
+          points: polylineCoordinates);
+
+      // add the constructed polyline as a set of points
+      // to the polyline set, which will eventually
+      // end up showing up on the map
+      _polylines.add(polyline);
+    });
+  }
 }
-
-//import 'dart:async';
-
-//import 'package:flutter/material.dart';
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-//void main() => runApp(MyApp());
-
-//class MyApp extends StatelessWidget {
-//  @override
-//  Widget build(BuildContext context) {
-//    return MaterialApp(
-//      title: 'Flutter Google Maps Demo',
-//      home: MapSample(),
-//    );
-//  }
-//}
-
-//class MapSample extends StatefulWidget {
-//  @override
-//  State<MapSample> createState() => MapSampleState();
-//}
-
-//class MapSampleState extends State<MapSample> {
-//  Completer<GoogleMapController> _controller = Completer();
-
-//  static final CameraPosition _kGooglePlex = CameraPosition(
-//    target: LatLng(37.42796133580664, -122.085749655962),
-//    zoom: 14.4746,
-//  );
-
-//  static final CameraPosition _kLake = CameraPosition(
-//      bearing: 192.8334901395799,
-//      target: LatLng(37.43296265331129, -122.08832357078792),
-//      tilt: 59.440717697143555,
-//      zoom: 19.151926040649414);
-
-//  @override
-//  Widget build(BuildContext context) {
-//    return new Scaffold(
-//      body: GoogleMap(
-//        mapType: MapType.hybrid,
-//        initialCameraPosition: _kGooglePlex,
-//        onMapCreated: (GoogleMapController controller) {
-//          _controller.complete(controller);
-//        },
-//      ),
-//      floatingActionButton: FloatingActionButton.extended(
-//        onPressed: _goToTheLake,
-//        label: Text('To the lake!'),
-//        icon: Icon(Icons.directions_boat),
-//      ),
-//    );
-//  }
-
-//  Future<void> _goToTheLake() async {
-//    final GoogleMapController controller = await _controller.future;
-//    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-//  }
-//}
