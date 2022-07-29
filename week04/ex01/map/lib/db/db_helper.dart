@@ -11,7 +11,7 @@ class DBHelper {
   Future<Database> get database async {
     if (_db != null) return _db;
     _db = openDatabase(
-      join(await getDatabasesPath(), 'locate.db'),
+      join(await getDatabasesPath(), 'locate2.db'),
       onCreate: (db, version) {
         return db.execute(
           'CREATE TABLE LOCATION(id INTEGER PRIMARY KEY, year INTEGER, month INTEGER, day INTEGER, hour INTEGER, minute INTEGER, latitude REAL, longitude REAL)',

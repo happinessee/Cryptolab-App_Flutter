@@ -43,16 +43,16 @@ class MapState extends State<Map> {
   var currentPosition;
   int idx = 0; // db에 저장할 id, 1씩 늘려주면서 사용할 것이다.
   int markeridx = 1;
+  int polylineidx = 1;
   Completer<GoogleMapController> myController = Completer();
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = Set<Polyline>();
-  List<LatLng> polylineCoordinates = [];
-  late PolylinePoints polylinePoints;
+  PolylinePoints polylinePoints = PolylinePoints();
 
   // 초기 카메라 위치
   static CameraPosition kAnyang = const CameraPosition(
       bearing: 192.8334901395799,
-      target: LatLng(37.4108359, 126.9123497),
+      target: LatLng(37.488163, 127.064671),
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
 
@@ -61,6 +61,8 @@ class MapState extends State<Map> {
   initState() {
     super.initState();
     getCurrentLocation();
+    initMarker();
+    initPolyline();
   }
 
   @override
@@ -73,7 +75,7 @@ class MapState extends State<Map> {
           myController.complete(controller);
         },
         markers: _markers,
-        //polylines: _polylines,
+        polylines: _polylines,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -99,6 +101,35 @@ class MapState extends State<Map> {
     });
   }
 
+  // db에서 위치정보를 불러와 앱 처음 시작할때도 marker를 찍어주기 위한 함수
+  initMarker() async {
+    var locationList = await DBHelper().getAllLocation();
+    if (locationList.isEmpty) return;
+    for (int i = 0; i < locationList.length; i++) {
+      _markers.add(Marker(
+        markerId: MarkerId(markeridx.toString()),
+        position: LatLng(locationList[i].latitude, locationList[i].longitude),
+      ));
+      markeridx++;
+    }
+  }
+
+  // db에서 위치정보를 불러와 앱이 처음 시작할 때 polyline을 그려주기 위한 함수이다.
+  initPolyline() async {
+    var locationList = await DBHelper().getAllLocation();
+    List<LatLng> loc = [];
+    if (locationList.isEmpty) return;
+    if (locationList.length < 2) return;
+    for (int i = 0; i < locationList.length - 1; i++) {
+      loc.add(LatLng(locationList[i].latitude, locationList[i].longitude));
+    }
+    _polylines.add(Polyline(
+      polylineId: PolylineId(polylineidx.toString()),
+      points: loc,
+      color: Colors.lightBlue,
+    ));
+  }
+
   changeCamera() async {
     getCurrentLocation();
     GoogleMapController controller = await myController.future;
@@ -106,7 +137,7 @@ class MapState extends State<Map> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(currentPosition.latitude, currentPosition.longitude),
-          zoom: 14.4746,
+          zoom: 30,
         ),
       ),
     );
@@ -116,6 +147,7 @@ class MapState extends State<Map> {
     ));
     save(currentPosition);
     markeridx++;
+    initPolyline();
   }
 
   Future<void> save(dynamic currentPosition) async {
@@ -132,36 +164,5 @@ class MapState extends State<Map> {
       longitude: currentPosition.longitude,
     );
     await hp.insertLocate(locate);
-  }
-
-  setPolylines() async {
-    var locationList = await DBHelper().getAllLocation();
-    if (locationList.length < 1) return ;
-    List<PointLatLng> result = await polylinePoints?.getRouteBetweenCoordinates(
-        '$androidgoogleMapApiKey',
-        (SOURCE_LOCATION.latitude,
-        SOURCE_LOCATION.longitude),
-        (DEST_LOCATION.latitude,
-        DEST_LOCATION.longitude));
-    if (result.isNotEmpty) {
-      // loop through all PointLatLng points and convert them
-      // to a list of LatLng, required by the Polyline
-      result.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-      });
-    }
-    setState(() {
-      // create a Polyline instance
-      // with an id, an RGB color and the list of LatLng pairs
-      Polyline polyline = Polyline(
-          polylineId: PolylineId('poly'),
-          color: Color.fromARGB(255, 40, 122, 198),
-          points: polylineCoordinates);
-
-      // add the constructed polyline as a set of points
-      // to the polyline set, which will eventually
-      // end up showing up on the map
-      _polylines.add(polyline);
-    });
   }
 }
