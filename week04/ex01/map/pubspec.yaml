@@ -42,6 +42,7 @@ dependencies:
   path: ^1.8.1
   intl: ^0.17.0
   flutter_polyline_points: ^1.0.0
+  flutter_background_geolocation: ^4.7.0
 
 dev_dependencies:
   flutter_test:
