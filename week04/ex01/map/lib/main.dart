@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart';
 import 'package:flutter_config/flutter_config.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
-    as bg;
+
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
@@ -59,13 +56,12 @@ class Maps extends StatefulWidget {
 
 class MapState extends State<Maps> {
   var currentPosition;
-  int idx = 0; // db에 저장할 id, 1씩 늘려주면서 사용할 것이다.
+  int idx = 0; // db에 저장할 id, 1씩 늘려주면서 사용할 것이다. // 이런식으로 저장하면 안됨. 중복저장됨.
   int markeridx = 1;
   int polylineidx = 1;
   Completer<GoogleMapController> myController = Completer();
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = Set<Polyline>();
-  PolylinePoints polylinePoints = PolylinePoints();
 
   static const String _isolateName = "LocatorIsolate";
   ReceivePort port = ReceivePort();
@@ -240,59 +236,5 @@ class MapState extends State<Maps> {
       longitude: lot,
     );
     await hp.insertLocate(locate);
-  }
-
-  initBackgroundGeolocation() {
-    // Fired whenever a location is recorded
-    bg.BackgroundGeolocation.onLocation((bg.Location location) {
-      print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
-      print('[location] - $location');
-      save(location.coords.latitude, location.coords.longitude);
-      initPolyline();
-      initMarker();
-    });
-
-    // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
-    bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
-      print('[motionchange] - $location');
-    });
-
-    // Fired whenever the state of location-services changes.  Always fired at boot
-    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
-      print('[providerchange] - $event');
-    });
-
-    ////
-    // 2.  Configure the plugin
-    //
-    bg.BackgroundGeolocation.ready(bg.Config(
-            desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-            distanceFilter: 10.0,
-            stopOnTerminate: false,
-            startOnBoot: true,
-            debug: true,
-            logLevel: bg.Config.LOG_LEVEL_VERBOSE))
-        .then((bg.State state) {
-      if (!state.enabled) {
-        ////
-        // 3.  Start the plugin.
-        //
-        bg.BackgroundGeolocation.start();
-      }
-    });
-  }
-
-  void _onClickGetCurrentPosition() {
-    bg.BackgroundGeolocation.getCurrentPosition(
-            persist: true, // <-- do persist this location
-            desiredAccuracy: 0, // <-- desire best possible accuracy
-            timeout: 900, // <-- wait 30s before giving up.
-            samples: 3 // <-- sample 3 location before selecting best.
-            )
-        .then((bg.Location location) {
-      print('[getCurrentPosition] - $location');
-    }).catchError((error) {
-      print('[getCurrentPosition] ERROR: $error');
-    });
   }
 }
