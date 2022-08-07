@@ -8,7 +8,7 @@ class LocationCallbackHandler {
   static Future<void> initCallback(Map<dynamic, dynamic> params) async {
     LocationServiceRepository myLocationCallbackRepository =
         LocationServiceRepository();
-    await myLocationCallbackRepository.init(params);
+    await myLocationCallbackRepository.init();
   }
 
   static Future<void> disposeCallback() async {

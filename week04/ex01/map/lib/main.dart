@@ -27,6 +27,8 @@ import 'dart:ui';
 import 'package:map/db/db_helper.dart';
 import 'package:map/db/locate_model.dart';
 import 'package:map/auth/secret.dart';
+import 'package:map/location_callback_handler.dart';
+import 'package:map/location_service_repository.dart';
 
 void main() async {
   // apiKey의 호출을 위함.
@@ -56,7 +58,7 @@ class Maps extends StatefulWidget {
 
 class MapState extends State<Maps> {
   var currentPosition;
-  int idx = 0; // db에 저장할 id, 1씩 늘려주면서 사용할 것이다. // 이런식으로 저장하면 안됨. 중복저장됨.
+  int idx = 1000000;
   int markeridx = 1;
   int polylineidx = 1;
   Completer<GoogleMapController> myController = Completer();
@@ -80,17 +82,8 @@ class MapState extends State<Maps> {
     getCurrentLocation();
     initMarker();
     initPolyline();
-    if (Platform.isIOS) {
-      initBackgroundGeolocation();
-    }
-    if (Platform.isAndroid) {
-      IsolateNameServer.registerPortWithName(port.sendPort, _isolateName);
-      port.listen((dynamic data) {
-        // do something with data
-      });
-      initPlatformState();
-      startLocationService();
-    }
+    initPlatformState();
+    startLocationService();
   }
 
   Future<void> initPlatformState() async {
@@ -108,19 +101,20 @@ class MapState extends State<Maps> {
   }
 
   void startLocationService() {
+    Map<String, dynamic> data = {'countInit': 1};
     BackgroundLocator.registerLocationUpdate(
       LocationCallbackHandler.callback,
       initCallback: LocationCallbackHandler.initCallback,
       initDataCallback: data,
       disposeCallback: LocationCallbackHandler.disposeCallback,
       autoStop: false,
-      iosSettings: IOSSettings(
+      iosSettings: const IOSSettings(
         accuracy: locAccuracy.LocationAccuracy.NAVIGATION,
         distanceFilter: 0,
       ),
-      androidSettings: andSetting.AndroidSettings(
+      androidSettings: const andSetting.AndroidSettings(
         accuracy: locAccuracy.LocationAccuracy.NAVIGATION,
-        interval: 5,
+        interval: 300,
         distanceFilter: 0,
         androidNotificationSettings: andSetting.AndroidNotificationSettings(
           notificationChannelName: 'Location tracking',
@@ -151,7 +145,6 @@ class MapState extends State<Maps> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           changeCamera();
-          _onClickGetCurrentPosition();
         },
         label: const Text('current My location'),
         icon: const Icon(Icons.gps_fixed),
@@ -176,10 +169,11 @@ class MapState extends State<Maps> {
   // db에서 위치정보를 불러와 앱 처음 시작할때도 marker를 찍어주기 위한 함수
   initMarker() async {
     var locationList = await DBHelper().getAllLocation();
+    print('marker, locationlength: ${locationList.length}');
     if (locationList.isEmpty) return;
     for (int i = 0; i < locationList.length; i++) {
       _markers.add(Marker(
-        markerId: MarkerId(markeridx.toString()),
+        markerId: MarkerId(locationList.length.toString()),
         position: LatLng(locationList[i].latitude, locationList[i].longitude),
       ));
       markeridx++;
@@ -190,13 +184,14 @@ class MapState extends State<Maps> {
   initPolyline() async {
     var locationList = await DBHelper().getAllLocation();
     List<LatLng> loc = [];
+    print('polyline, locationlength: ${locationList.length}');
     if (locationList.isEmpty) return;
     if (locationList.length < 2) return;
     for (int i = 0; i < locationList.length - 1; i++) {
       loc.add(LatLng(locationList[i].latitude, locationList[i].longitude));
     }
     _polylines.add(Polyline(
-      polylineId: PolylineId(polylineidx.toString()),
+      polylineId: PolylineId(locationList.length.toString()),
       points: loc,
       color: Colors.lightBlue,
     ));
