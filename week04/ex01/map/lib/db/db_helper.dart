@@ -14,7 +14,7 @@ class DBHelper {
       join(await getDatabasesPath(), 'locate2.db'),
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE LOCATION(id INTEGER PRIMARY KEY, year INTEGER, month INTEGER, day INTEGER, hour INTEGER, minute INTEGER, latitude REAL, longitude REAL)',
+          'CREATE TABLE LOCATION(id INTEGER KEY, year INTEGER, month INTEGER, day INTEGER, hour INTEGER, minute INTEGER, latitude REAL, longitude REAL)',
         );
       },
       version: 1,

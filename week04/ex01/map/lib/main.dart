@@ -58,7 +58,7 @@ class Maps extends StatefulWidget {
 
 class MapState extends State<Maps> {
   var currentPosition;
-  int idx = 1000000;
+  int idx = 101010;
   int markeridx = 1;
   int polylineidx = 1;
   Completer<GoogleMapController> myController = Completer();
@@ -114,7 +114,7 @@ class MapState extends State<Maps> {
       ),
       androidSettings: const andSetting.AndroidSettings(
         accuracy: locAccuracy.LocationAccuracy.NAVIGATION,
-        interval: 300,
+        interval: 5,
         distanceFilter: 0,
         androidNotificationSettings: andSetting.AndroidNotificationSettings(
           notificationChannelName: 'Location tracking',
@@ -171,13 +171,14 @@ class MapState extends State<Maps> {
     var locationList = await DBHelper().getAllLocation();
     print('marker, locationlength: ${locationList.length}');
     if (locationList.isEmpty) return;
-    for (int i = 0; i < locationList.length; i++) {
-      _markers.add(Marker(
-        markerId: MarkerId(locationList.length.toString()),
-        position: LatLng(locationList[i].latitude, locationList[i].longitude),
-      ));
-      markeridx++;
-    }
+    setState(() {
+      for (int i = 0; i < locationList.length; i++) {
+        _markers.add(Marker(
+          markerId: MarkerId((i).toString()),
+          position: LatLng(locationList[i].latitude, locationList[i].longitude),
+        ));
+      }
+    });
   }
 
   // db에서 위치정보를 불러와 앱이 처음 시작할 때 polyline을 그려주기 위한 함수이다.
@@ -190,11 +191,13 @@ class MapState extends State<Maps> {
     for (int i = 0; i < locationList.length - 1; i++) {
       loc.add(LatLng(locationList[i].latitude, locationList[i].longitude));
     }
-    _polylines.add(Polyline(
-      polylineId: PolylineId(locationList.length.toString()),
-      points: loc,
-      color: Colors.lightBlue,
-    ));
+    setState(() {
+      _polylines.add(Polyline(
+        polylineId: PolylineId((polylineidx).toString()),
+        points: loc,
+        color: Colors.lightBlue,
+      ));
+    });
   }
 
   changeCamera() async {
@@ -218,10 +221,11 @@ class MapState extends State<Maps> {
   }
 
   Future<void> save(dynamic lat, dynamic lot) async {
+    print('id: ${DateTime.now().millisecondsSinceEpoch ~/ 1000}');
     DBHelper hp = DBHelper();
     var time = DateTime.now();
     var locate = Location(
-      id: idx++,
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       year: time.year,
       month: time.month,
       day: time.day,
@@ -230,6 +234,7 @@ class MapState extends State<Maps> {
       latitude: lat,
       longitude: lot,
     );
+
     await hp.insertLocate(locate);
   }
 }
