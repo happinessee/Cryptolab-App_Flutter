@@ -57,6 +57,8 @@ class Maps extends StatefulWidget {
 }
 
 class MapState extends State<Maps> {
+  var month = DateTime.now().month;
+  var day = DateTime.now().day;
   var currentPosition;
   int idx = 101010;
   int markeridx = 1;
@@ -64,6 +66,7 @@ class MapState extends State<Maps> {
   Completer<GoogleMapController> myController = Completer();
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = Set<Polyline>();
+  final isSelected = <bool>[false, false, false];
 
   static const String _isolateName = "LocatorIsolate";
   ReceivePort port = ReceivePort();
@@ -114,7 +117,7 @@ class MapState extends State<Maps> {
       ),
       androidSettings: const andSetting.AndroidSettings(
         accuracy: locAccuracy.LocationAccuracy.NAVIGATION,
-        interval: 5,
+        interval: 300,
         distanceFilter: 0,
         androidNotificationSettings: andSetting.AndroidNotificationSettings(
           notificationChannelName: 'Location tracking',
@@ -133,20 +136,86 @@ class MapState extends State<Maps> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: kAnyang,
-        onMapCreated: (GoogleMapController controller) {
-          myController.complete(controller);
-        },
-        markers: _markers,
-        polylines: _polylines,
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          GoogleMap(
+            mapType: MapType.hybrid,
+            initialCameraPosition: kAnyang,
+            onMapCreated: (GoogleMapController controller) {
+              myController.complete(controller);
+            },
+            markers: _markers,
+            polylines: _polylines,
+          ),
+          Container(
+            margin: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: ToggleButtons(
+              isSelected: isSelected,
+              onPressed: (int index) {
+                setState(() {
+                  isSelected[index] = !isSelected[index];
+                  if (isSelected[0]) {
+                    day -= 1;
+                    if (day <= 0) {
+                      month -= 1;
+                      day = 31;
+                    }
+                    isSelected[0] = false;
+                  } else if (isSelected[2]) {
+                    day += 1;
+                    if (day >= 32) {
+                      month += 1;
+                      day = 1;
+                    }
+                    isSelected[1] = false;
+                  }
+                  initMarker();
+                  initPolyline();
+                });
+              },
+              color: Colors.grey,
+              disabledColor: Colors.white,
+              renderBorder: false,
+              borderWidth: 0,
+              borderColor: Colors.white,
+              selectedColor: Colors.black,
+              borderRadius: BorderRadius.circular(10),
+              fillColor: Colors.white,
+              selectedBorderColor: Colors.white,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30),
+                  child: Icon(Icons.arrow_back),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Text(
+                    '$month월 $day일',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30),
+                  child: Icon(Icons.arrow_forward),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           changeCamera();
         },
-        label: const Text('current My location'),
+        label: const Text(''),
         icon: const Icon(Icons.gps_fixed),
       ),
     );
@@ -168,10 +237,11 @@ class MapState extends State<Maps> {
 
   // db에서 위치정보를 불러와 앱 처음 시작할때도 marker를 찍어주기 위한 함수
   initMarker() async {
-    var locationList = await DBHelper().getAllLocation();
+    var locationList = await getDayLocation();
     print('marker, locationlength: ${locationList.length}');
     if (locationList.isEmpty) return;
     setState(() {
+      _markers.clear();
       for (int i = 0; i < locationList.length; i++) {
         _markers.add(Marker(
           markerId: MarkerId((i).toString()),
@@ -181,9 +251,22 @@ class MapState extends State<Maps> {
     });
   }
 
+  getDayLocation() async {
+    var locationList = await DBHelper().getAllLocation();
+    List<Location> dayLocation = [];
+    if (locationList.isEmpty) return;
+    for (int i = 0; i < locationList.length; i++) {
+      if (locationList[i].day == day && locationList[i].month == month) {
+        dayLocation.add(locationList[i]);
+      }
+    }
+    print('dayLocation length: ${dayLocation.length}');
+    return dayLocation;
+  }
+
   // db에서 위치정보를 불러와 앱이 처음 시작할 때 polyline을 그려주기 위한 함수이다.
   initPolyline() async {
-    var locationList = await DBHelper().getAllLocation();
+    var locationList = await getDayLocation();
     List<LatLng> loc = [];
     print('polyline, locationlength: ${locationList.length}');
     if (locationList.isEmpty) return;
