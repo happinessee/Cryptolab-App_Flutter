@@ -87,6 +87,7 @@ class MapState extends State<Maps> {
     initPolyline();
     initPlatformState();
     startLocationService();
+    // checkLocation(8, 8); 해당 날짜에, 앱이 정상적으로 작동하는지 확인하는 테스트코드
   }
 
   Future<void> initPlatformState() async {
@@ -251,6 +252,7 @@ class MapState extends State<Maps> {
     });
   }
 
+  // 해당 날짜의 위치정보만을 뽑아오는 함수 (미완성)
   getDayLocation() async {
     var locationList = await DBHelper().getAllLocation();
     List<Location> dayLocation = [];
@@ -262,6 +264,31 @@ class MapState extends State<Maps> {
     }
     print('dayLocation length: ${dayLocation.length}');
     return dayLocation;
+  }
+
+  checkLocation(int month, int day) async {
+    var locationList = await DBHelper().getAllLocation();
+    List<Location> dayLocation = [];
+    if (locationList.isEmpty) return;
+    for (int i = 0; i < locationList.length; i++) {
+      print('${locationList[i].hour} - ${locationList[i].minute}');
+      if (locationList[i].day == day && locationList[i].month == month) {
+        dayLocation.add(locationList[i]);
+      }
+    }
+    if (dayLocation.length < 2) return;
+    for (int i = 0; i < dayLocation.length - 1; i++) {
+      if (dayLocation[i + 1].id - dayLocation[i].id > 900)
+        continue;
+      else {
+        print(
+            '************************\n*정상적으로 작동하지 않습니다.*\n************************');
+        print(
+            '${dayLocation[i].hour} : ${dayLocation[i].minute} -- ${dayLocation[i + 1].hour} : ${dayLocation[i + 1].minute}');
+        return;
+      }
+    }
+    print('************************\n*정상적으로 작동합니다.*\n************************');
   }
 
   // db에서 위치정보를 불러와 앱이 처음 시작할 때 polyline을 그려주기 위한 함수이다.
@@ -317,7 +344,6 @@ class MapState extends State<Maps> {
       latitude: lat,
       longitude: lot,
     );
-
     await hp.insertLocate(locate);
   }
 }
